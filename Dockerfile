@@ -1,4 +1,6 @@
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:21-jdk-noble AS build
+# The Maven wrapper verifies the ZIP checksum and uses unzip to extract it.
+RUN apt-get update && apt-get install -y --no-install-recommends unzip
 WORKDIR /build/backend
 COPY ["voice-chat-backend 3/.mvn/", ".mvn/"]
 COPY ["voice-chat-backend 3/mvnw", "voice-chat-backend 3/pom.xml", "./"]
