@@ -1,0 +1,15 @@
+**
+!Dockerfile
+!源代码/
+!源代码/index.html
+!源代码/styles.css
+!源代码/app.js
+!源代码/service-worker.js
+!源代码/manifest.webmanifest
+!voice-chat-backend 3/
+!voice-chat-backend 3/pom.xml
+!voice-chat-backend 3/mvnw
+!voice-chat-backend 3/.mvn/
+!voice-chat-backend 3/.mvn/**
+!voice-chat-backend 3/src/
+!voice-chat-backend 3/src/**
