@@ -1,0 +1,10 @@
+{
+  "name": "安心助手——老年人 AI 助手",
+  "short_name": "安心助手",
+  "start_url": "./index.html",
+  "display": "browser",
+  "background_color": "#f5f7f6",
+  "theme_color": "#176b55",
+  "lang": "zh-CN",
+  "description": "大字体、大按钮、高对比的老年人 AI 助手前端原型"
+}

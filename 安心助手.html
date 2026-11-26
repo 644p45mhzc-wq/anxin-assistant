@@ -1,0 +1,1210 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#176b55" />
+  <meta name="description" content="面向老年人的简洁 AI 助手前端原型" />
+  <style>:root { --brand:#195d49; --brand-dark:#0e4d3d; --soft:#eaf5f0; --ink:#17231f; --muted:#596861; --line:#bdc9bb; --paper:#fffdf7; --bg:#f4f3ec; --danger:#a43131; --base:18px; }
+* { box-sizing:border-box; }
+html { font-size:var(--base); }
+body { margin:0; color:var(--ink); background:var(--bg); font-family:"Microsoft YaHei",system-ui,sans-serif; line-height:1.55; }
+button,input,textarea { font:inherit; }
+button { cursor:pointer; }
+.app-shell {height:100vh;height:100dvh;display:flex;flex-direction:column}
+#mainContent { flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+.topbar { flex:none; z-index:5; display:flex; justify-content:space-between; align-items:center; padding:18px 20px 14px; color:white; background:var(--brand); }
+h1,h2,h3,p { margin-top:0; } h1 { margin-bottom:0; font-size:1.65rem; } h2 { margin-bottom:8px; font-size:1.45rem; } h3 { margin-bottom:4px; }
+.eyebrow { margin-bottom:1px; font-size:.8rem; font-weight:700; letter-spacing:.08em; opacity:.85; }
+.icon-button,.close-button { min-height:48px; padding:8px 12px; border:2px solid #ffffffaa; border-radius:12px; color:white; background:transparent; font-weight:700; }
+.topbar .icon-button {
+  height:max(48px,2.1rem); padding-block:0; white-space:nowrap; line-height:1.25;
+}
+#fontLevel {font-size:inherit}
+.page { display:none; padding:18px 16px; }.page.active { display:block; }
+.welcome-card,.settings-card { display:flex; gap:14px; padding:18px; border:1px solid var(--line); border-radius:18px; background:var(--paper); box-shadow:0 5px 18px #263b3010; }
+.welcome-card p,.settings-card p { margin-bottom:0; color:var(--muted); }
+.avatar { display:grid; place-items:center; flex:0 0 58px; height:58px; border-radius:50%; color:white; background:var(--brand); font-weight:800; font-size:1.45rem; }
+.messages { display:flex; flex-direction:column; gap:18px; padding:22px 0; }
+.message { max-width:92%; }.message.user { align-self:flex-end; }.message-label { margin:0 6px 5px; color:var(--muted); font-size:.82rem; font-weight:700; }
+.bubble { padding:16px; border-radius:18px 18px 18px 4px; background:var(--paper); border:1px solid var(--line); }.user .bubble { color:white; background:var(--brand); border-color:var(--brand); border-radius:18px 18px 4px 18px; }
+.bubble p:last-child { margin-bottom:0; }.answer-detail { white-space:pre-wrap; overflow-wrap:anywhere; }.expand-button { width:100%; margin-top:10px; padding:10px; border:0; border-top:1px solid var(--line); color:var(--brand-dark); background:transparent; font-weight:800; }
+.speak-button { margin-top:7px; min-height:44px; border:0; color:var(--brand-dark); background:transparent; font-weight:700; }
+.composer-card { padding:16px; border:2px solid var(--line); border-radius:18px; background:var(--paper); }.composer-card label,label { display:block; margin-bottom:7px; font-weight:800; }
+textarea,input { width:100%; padding:13px; border:2px solid #9dafA6; border-radius:12px; color:var(--ink); background:var(--paper); }.speech-hint { margin:8px 0 13px; color:var(--muted); font-size:.82rem; }
+.composer-actions,.dialog-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; }.primary-button,.secondary-button { min-height:52px; padding:10px 16px; border-radius:12px; font-weight:800; }.primary-button { border:2px solid var(--brand); color:white; background:var(--brand); }.secondary-button { border:1px solid var(--brand); color:var(--brand-dark); background:var(--paper); }.compact { min-height:48px; }
+.recording { color:white!important; background:var(--danger)!important; border-color:var(--danger)!important; }
+.section-heading { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }.section-heading h2 { margin:0; font-weight:700; font-size:1.65rem; line-height:1.35; }.search-box { padding:14px; border-radius:15px; background:var(--soft); }.search-box input { margin-top:7px; }
+.list-stack { display:flex; flex-direction:column; gap:12px; margin-top:16px; }.list-card { padding:18px; border:1px solid var(--line); border-radius:18px; background:var(--paper); }.list-card.paused { border-style:dashed; }.list-card p { margin-bottom:5px; }.list-card small { color:var(--muted); }.empty-state { padding:30px 15px; text-align:center; color:var(--muted); }
+.card-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }.status-badge { flex:0 0 auto; padding:4px 9px; border-radius:20px; color:var(--brand-dark); background:var(--soft); font-size:.85rem; font-weight:800; }.paused .status-badge { color:#35423c; background:#e5e9e7; }
+.card-actions { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid var(--line); }.card-actions.three { display:flex; flex-wrap:wrap; gap:8px; }
+.card-actions.three .small-action, #addReminderButton { min-height:44px; padding:4px 14px; border-width:1px; font-size:.95rem; }.small-action { min-height:48px; padding:7px 9px; border:2px solid var(--brand); border-radius:10px; color:var(--brand-dark); background:white; font-weight:800; }.small-action.danger { color:var(--danger); border-color:#ba8683; background:#fff8f7; }.small-action:active { transform:translateY(1px); }
+.settings-card { justify-content:space-between; flex-direction:column; margin-bottom:14px; }.row-setting { flex-direction:row; align-items:center; }.segmented { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }.segmented button { min-height:48px; border:1px solid var(--brand); color:var(--brand-dark); background:var(--paper); }.segmented button.selected { color:white; background:var(--brand); }
+.switch {position:relative;display:grid;align-items:center;flex:none;min-height:48px;margin:0}.switch input {position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.switch input:focus-visible + span {outline:3px solid var(--brand-dark);outline-offset:3px}.switch span { display:block; width:62px; height:36px; padding:4px; border-radius:30px; background:#65766c; }.switch span:after { content:""; display:block; width:28px; height:28px; border-radius:50%; background:white; transition:.2s; }.switch input:checked + span { background:var(--brand); }.switch input:checked + span:after { transform:translateX(26px); }
+.nav-item { min-height:56px; line-height:1.2; border:0; color:var(--muted); background:transparent; font-weight:800; }.nav-item span { display:block; font-size:1.12rem; }.nav-item.active { color:var(--brand-dark); background:var(--soft); border-radius:12px; }
+.speech-player { position:fixed; left:50%; bottom:86px; z-index:20; width:min(500px,calc(100% - 20px)); padding:15px; transform:translateX(-50%); border:2px solid var(--brand); border-radius:18px; color:var(--ink); background:var(--paper); box-shadow:0 10px 34px #0c21188c; }.speech-player[hidden] { display:none; }.speech-player-head,.progress-label { display:flex; justify-content:space-between; align-items:center; gap:12px; }.speech-player-head { margin-bottom:10px; }.player-close { min-height:40px; padding:5px 12px; border:2px solid var(--line); border-radius:10px; color:var(--danger); background:white; font-weight:800; }.progress-label { margin:0; color:var(--muted); font-size:.8rem; }.speech-progress { width:100%; height:34px; margin:2px 0 9px; padding:0; border:0; accent-color:var(--brand); }.speech-controls { display:grid; grid-template-columns:1fr 1.8fr; gap:10px; }.speech-controls .primary-button { min-height:48px; }.speed-controls { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; }.speed-controls button { min-height:48px; padding:5px; border:1px solid var(--brand); color:var(--brand-dark); background:var(--paper); font-weight:800; }.speed-controls button:first-child { border-radius:10px 0 0 10px; }.speed-controls button:last-child { border-radius:0 10px 10px 0; }.speed-controls button.selected { color:white; background:var(--brand); }.player-help { margin:8px 0 0; color:var(--muted); font-size:.74rem; }
+dialog { width:min(460px,calc(100% - 28px)); padding:20px; border:0; border-radius:20px; color:var(--ink); background:var(--paper); } dialog::backdrop { background:#0d2119aa; }.dialog-heading { display:flex; justify-content:space-between; }.close-button { color:var(--ink); border-color:var(--line); }.dialog-actions { margin-top:16px; }.confirm-note { color:var(--muted); font-size:.88rem; }
+body.high-contrast { --brand:#004c37; --brand-dark:#003526; --soft:#dff4e9; --ink:#000; --muted:#29342f; --line:#53645c; --bg:#fff; --paper:#fff; }
+button:focus-visible,input:focus-visible,textarea:focus-visible { outline:4px solid #e9a527; outline-offset:2px; }
+
+.chat-home {background:var(--paper);padding:20px;border-radius:18px}
+.high-contrast .chat-home {background:var(--paper)}
+.chat-home button {width:100%;min-height:60px;margin-top:10px}
+.chat-home [hidden] {display:none}
+.chat-home h2 {font-size:1.65rem}
+#speechHint {margin:8px 0 14px}
+.landscape {position:relative;overflow:hidden;width:120px;height:56px;margin-bottom:16px}
+.landscape i {position:absolute;left:48px;top:0;width:32px;height:32px;border-radius:50%;background:#e5ab59}
+.landscape:before,.landscape:after {content:"";position:absolute;left:32px;top:32px;width:110px;height:55px;border-radius:50%;background:#a5bca0}
+.landscape:after {left:-28px;top:40px;background:#476d53}
+.chat-home:has(#draftArea:not([hidden])) .landscape {display:none}
+
+.messages:empty {display:none}
+.messages:not(:empty) + .chat-home .landscape {display:none}
+
+#continueChat {min-height:48px;padding:6px 16px;border:1px solid var(--brand);border-radius:24px;background:var(--paper);color:var(--brand-dark);font-weight:700}
+#chatComposer[hidden] {display:none}
+
+.composer-heading {display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.chat-home #collapseChat {flex:none;width:auto;min-height:48px;margin:0;padding:6px 14px;border:1px solid var(--brand);border-radius:12px;background:var(--paper);color:var(--brand-dark);font-weight:700}
+
+.memo-draft {margin-top:8px}.memo-draft [role="status"]:empty {display:none}.memo-draft [role="status"] {overflow-wrap:anywhere}
+
+.section-heading {gap:12px;padding:6px 0 16px;border-bottom:1px solid var(--line)}
+.settings-card,.chat-home,.list-card,.search-box {box-shadow:0 2px 7px #213e3009}
+.search-box {padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--paper)}
+.segmented {padding:4px;border-radius:14px;background:var(--soft)}
+.segmented button {border-radius:10px}
+.nav-item.active {box-shadow:inset 0 -3px var(--brand)}
+.card-top > :first-child {min-width:0;overflow-wrap:anywhere}
+button:disabled {color:var(--muted);background:var(--bg);border-color:var(--line);cursor:default}
+@media (max-width:380px) {
+  .page {padding:16px 12px}
+  .list-card,.settings-card,.chat-home {padding:14px}
+  .dialog-actions {grid-template-columns:repeat(auto-fit,minmax(min(100%,5.5rem),1fr))}
+  .speech-controls {grid-template-columns:1fr}
+}
+
+#liveTranscript {padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--soft)}
+#liveText {margin:6px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+
+
+.app-shell {display:grid;grid-template-columns:clamp(160px,17vw,240px) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+.topbar {grid-column:1/-1;padding:12px clamp(16px,3vw,44px)}
+#menuToggle {display:none}
+.site-nav {grid-row:2;grid-column:1;display:flex;flex-direction:column;gap:10px;padding:18px 12px;background:var(--paper);border-right:1px solid var(--line);overflow:auto}
+.site-nav button {flex:1 0 0;min-height:76px;text-align:center;padding:12px;border:1px solid var(--line);border-radius:14px;background:#f1f4ed;color:var(--brand-dark);font-size:1.1rem}
+.site-nav .active {background:var(--brand);border-color:var(--brand);color:white;box-shadow:none}
+#mainContent {grid-row:2;grid-column:2;min-width:0}
+.page {padding:clamp(14px,2.2vw,32px)}
+#chatPage.active {display:flex;flex-direction:column;min-height:100%;align-items:stretch}
+#continueChat {align-self:flex-start}
+.chat-home {padding:clamp(18px,3vw,44px)}
+#messages:empty ~ .chat-home {flex:1;display:flex;flex-direction:column}
+.chat-home :is(#micButton,#typeButton) {flex:none;min-height:max(60px,3rem);padding:10px 16px;border-width:2px;font-size:1rem;line-height:1.5}
+#messages:empty ~ .chat-home #draftArea:not([hidden]) {flex:1;display:flex;flex-direction:column}
+#messages:empty ~ .chat-home textarea {flex:1;min-height:100px}
+#messages:empty ~ .chat-home #liveTranscript:not([hidden]) {flex:1}
+#memoList {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.chat-home h2 {font-size:clamp(1.6rem,4vw,2.3rem)}
+.speech-player {bottom:12px;max-height:80dvh;overflow:auto}
+@media(max-width:680px){
+ .app-shell {grid-template-columns:minmax(0,1fr)}
+ .topbar {gap:8px;padding:10px 12px}
+ .topbar .eyebrow {display:none}
+ .topbar h1 {font-size:1.25rem}
+ #menuToggle {display:block}
+ #mainContent {grid-column:1}
+ .site-nav {display:none}
+ .site-nav.open {display:flex;z-index:4;width:min(65vw,240px);box-shadow:6px 0 16px #183e3326}
+}
+
+.site-nav .nav-item {display:flex;flex-direction:column;justify-content:center;align-items:center;gap:clamp(4px,1.2vh,12px);min-height:96px}
+.nav-sketch {display:block;width:clamp(42px,6.8vh,62px);height:auto;flex:none}
+.site-nav .nav-item:not(.active) {border-color:#d5dfd3}
+.site-nav .nav-item:not(.active) .nav-sketch {color:#4c6958}
+.high-contrast .site-nav .nav-item:not(.active) {background:var(--paper);border-color:var(--line)}
+.high-contrast .site-nav .nav-item:not(.active) .nav-sketch {color:var(--ink)}
+@media (hover:hover) {
+  .site-nav .nav-item:not(.active):hover {background:var(--soft);border-color:var(--brand)}
+}
+
+.header-actions {display:flex;align-items:stretch;gap:8px}
+#authForm {display:grid;gap:10px}
+#authStatus:empty {display:none}
+@media(max-width:480px){.topbar {flex-wrap:wrap}.header-actions {margin-left:auto}.header-actions button {padding:5px 8px}}
+
+.page-bar {padding:8px 0;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+#threadTitle {overflow-wrap:anywhere;flex:1 1 10em}
+#threadList {display:grid;gap:8px}
+#threadList button {text-align:left;overflow-wrap:anywhere}
+#historyDialog {max-height:80dvh;overflow:auto}
+#historyDialog .dialog-heading {align-items:center;gap:12px;margin-bottom:1rem}
+#historyTitle {margin:0}
+#closeHistory {flex:none}
+#historyNotice:empty {display:none}
+
+
+
+.page-workspace {grid-column:2;grid-row:2;display:flex;flex-direction:column;min-height:0;min-width:0}
+.page-bar {flex:none;margin:0;padding:18px clamp(14px,2.2vw,32px);background:var(--paper)}
+.page-bar[hidden] {display:none}
+.page-bar h2 {display:flex; align-items:center; min-height:max(44px,calc(1.55rem + 14px)); margin:0; font-size:1rem; font-weight:700}
+.thread-name,.thread-actions {display:flex;align-items:center;gap:8px}
+.thread-name {flex:1;min-width:0}
+#threadTitle {flex:0 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.page-bar button {min-height:44px;padding:5px 12px;white-space:nowrap}
+@media(max-width:680px){.page-workspace {grid-column:1}.thread-name {flex-basis:100%}.page-bar {gap:8px;padding-block:12px}}
+
+/* The schedule and the task share a single live region across all pages. */
+.upcoming-memo {
+  flex:1; min-width:0; margin:0 clamp(12px,3vw,44px); display:flex;
+  align-items:center; justify-content:center; gap:.65rem; line-height:1.3;
+}
+.reminder-bell {flex:none; width:1.25rem; height:1.25rem; color:#ffe0a4}
+.reminder-copy {min-width:0; max-width:100%; text-align:left}
+#reminderWhen {display:block; font-size:.88rem; font-weight:600}
+#reminderTask:not([hidden]) {
+  display:block; margin-top:.26rem; font-size:1.05rem;
+  font-weight:500; letter-spacing:.065em; line-height:1.5;
+  overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+}
+.upcoming-memo:has(#reminderTask[hidden]) .reminder-bell {display:none}
+.header-actions {flex:none}
+@media(max-width:760px){
+  .topbar {flex-wrap:wrap}
+  .upcoming-memo {order:2; flex:1 0 100%; margin:0; justify-content:flex-start}
+  .upcoming-memo:has(#reminderTask:not([hidden])) {border-top:1px solid #ffffff55; padding-top:.3rem}
+  #reminderTask:not([hidden]) {
+    display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
+    white-space:normal; overflow-wrap:anywhere;
+  }
+  .header-actions {margin-left:auto}
+}
+
+.chat-home[data-mode="idle"] {justify-content:center}
+.chat-home[data-mode="idle"] #speechHint {margin:4px 0 16px; color:var(--muted)}
+.chat-home :is(#micButton,#typeButton) {min-height:max(64px,3.25rem); line-height:1.25}
+.chat-home :is(#micButton,#typeButton):not([hidden]) {display:inline-flex; align-items:center; justify-content:center; gap:.48em}
+.chat-home :is(#micButton.primary-button,#typeButton) {font-size:1.16rem}
+.entry-icon {width:1.35em; height:1.35em; flex:none}
+.stop-symbol, .chat-home[data-mode="listen"] .mic-symbol {display:none}
+.chat-home[data-mode="listen"] .stop-symbol {display:block}
+@media (max-width:680px){
+  .chat-home[data-mode="idle"] .landscape {width:108px; height:52px; margin-bottom:12px}
+}
+.composer-heading h2 {text-wrap:balance}
+@media (max-width:680px) {
+  .topbar {display:grid; grid-template-columns:auto minmax(0,1fr) auto; column-gap:6px}
+  .topbar h1 {font-size:1.1rem; line-height:1.25; text-wrap:balance}
+  .topbar .icon-button {font-size:.88rem; padding-inline:6px}
+  .header-actions {gap:5px}
+  .upcoming-memo {grid-column:1/-1}
+}
+
+@media (max-width:380px) {
+  .topbar {padding-inline:8px; column-gap:4px}
+  .topbar .icon-button {padding-inline:4px}
+  .header-actions {gap:4px}
+}
+</style>
+  <title>安心助手</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button type="button" id="menuToggle" class="icon-button" aria-expanded="false" aria-controls="siteNav">菜单</button>
+      <div>
+        <p class="eyebrow">您的生活小帮手</p>
+        <h1>安心助手</h1>
+      </div>
+
+      <div id="upcomingMemo" class="upcoming-memo" role="status" aria-atomic="true">
+        <svg class="reminder-bell" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M5 16c1.5-1.7 2-3.4 2-6a5 5 0 0 1 10 0c0 2.6.5 4.3 2 6v1H5zM10 20a2.4 2.4 0 0 0 4 0M12 3v2"/></svg>
+        <div class="reminder-copy"><span id="reminderWhen">近期暂无提醒</span><strong id="reminderTask" hidden></strong></div>
+      </div>
+      <div class="header-actions"><button id="accountButton" class="icon-button">登录</button>
+      <button id="fontButton" class="icon-button" type="button" title="点击切换标准、大、特大字号">字号 <span id="fontLevel">标准</span></button>
+      </div>
+    </header>
+
+      <nav class="site-nav" id="siteNav" aria-label="主要功能">
+        <button class="nav-item active" aria-current="page" data-page="chatPage"><svg class="nav-sketch" aria-hidden="true" focusable="false" viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 44Q7 40 8 30Q8 16 27 15Q44 14 47 26Q50 41 31 44L20 52L21 44Z"/><path d="M49 29Q62 30 63 42Q64 50 57 54L58 61L48 55Q37 56 33 51"/><path d="M19 28h17M19 34h10"/></svg>聊天</button>
+        <button class="nav-item" data-page="memoPage"><svg class="nav-sketch" aria-hidden="true" focusable="false" viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M41 12L18 14Q14 14 14 19L17 56Q17 60 22 60L47 58Q51 58 51 54L50 45"/><path d="M22 22l15-1M23 30l10-1M24 50l7-1"/><path d="M35 37l18-22q2-3 5 0l3 2q2 2 0 5L43 43l-10 5Z M49 20l8 7M35 37l8 6"/></svg>备忘</button>
+        <button class="nav-item" data-page="settingsPage"><svg class="nav-sketch" aria-hidden="true" focusable="false" viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20l10-1m13 0 25-1M12 36l28-1m13 0h8M12 53l16-1m13 0 19-1"/><path d="M22 19q0-7 7-7t6 7q0 7-6 7t-7-7ZM40 35q0-7 7-7t6 7q0 7-6 7t-7-7ZM28 52q0-7 7-7t6 7q0 7-6 7t-7-7Z"/></svg>设置</button>
+      </nav>
+    <div class="page-workspace">
+      <header class="page-bar" id="threadBar" data-bar-for="chatPage">
+        <div class="thread-name"><strong id="threadTitle">新对话</strong>
+          <button id="renameChat" class="secondary-button">改名</button></div>
+        <div class="thread-actions"><button id="newChat" class="primary-button">新对话</button>
+          <button id="chatHistory" class="secondary-button">历史对话</button></div>
+      </header>
+      <header class="page-bar" data-bar-for="memoPage" hidden>
+        <h2 id="memoTitle">我的备忘</h2>
+        <button id="addMemoButton" class="primary-button" type="button">新增</button>
+      </header>
+      <header class="page-bar" data-bar-for="settingsPage" hidden>
+        <h2 id="settingsTitle">设置</h2>
+      </header>
+    <main id="mainContent">
+      <section id="chatPage" class="page active" aria-label="聊天">
+        <div id="messages" class="messages" aria-live="polite"></div>
+        <button id="continueChat" type="button" aria-controls="chatComposer" aria-expanded="false" hidden>继续对话</button>
+        <div id="chatComposer" class="composer-card chat-home">
+          <div class="landscape" aria-hidden="true"><i></i></div>
+          <div class="composer-heading">
+            <h2 id="chatTitle" tabindex="-1">您好，想聊点什么？</h2>
+            <button id="collapseChat" type="button" aria-label="收起继续对话" hidden>收起</button>
+          </div>
+          <p id="speechHint" role="status"></p>
+          <div id="liveTranscript" hidden><strong>已识别文字</strong><p id="liveText"></p></div>
+          <div id="draftArea" hidden>
+            <label for="messageInput">您的消息</label>
+            <textarea maxlength="4000" id="messageInput" rows="3"></textarea>
+          </div>
+          <button id="sendButton" class="primary-button" hidden>确认发送</button>
+          <button id="editFailedMessage" class="secondary-button" hidden>修改文字</button>
+          <button id="micButton" class="primary-button">
+            <svg class="entry-icon" aria-hidden="true" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <g class="mic-symbol"><rect x="11" y="3" width="10" height="17" rx="5"/><path d="M7 15a9 9 0 0 0 18 0M16 24v5M11 29h10"/></g>
+              <rect class="stop-symbol" x="8" y="8" width="16" height="16" rx="3" fill="currentColor" stroke="none"/>
+            </svg><span id="micLabel">开始说话</span>
+          </button>
+          <button id="typeButton" class="secondary-button">
+            <svg class="entry-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="6" width="28" height="20" rx="4"/>
+              <path d="M7 12h1m5 0h1m5 0h1m4 0h1M7 16.5h1m5 0h1m5 0h1m4 0h1M10 21h12"/>
+            </svg><span id="typeLabel">打字提问</span>
+          </button>
+          <button id="cancelSpeech" class="secondary-button" hidden>取消这次录音</button>
+        </div>
+      </section>
+
+      <section id="memoPage" class="page" aria-labelledby="memoTitle">
+        <label class="search-box">搜索备忘<input id="memoSearch" type="search" placeholder="例如：医院、买菜" /></label>
+        <p id="memoSyncStatus" role="status" hidden></p>
+        <button id="importGuest" type="button" class="secondary-button" hidden></button>
+        <div id="memoList" class="list-stack"></div>
+      </section>
+
+
+      <section id="settingsPage" class="page" aria-labelledby="settingsTitle">
+        <div class="settings-card">
+          <div><h3>字体大小</h3><p>选择您看起来最舒服的大小。</p></div>
+          <div class="segmented" role="group" aria-label="字体大小">
+            <button data-font="normal" class="selected">标准</button><button data-font="large">大</button><button data-font="xlarge">特大</button>
+          </div>
+        </div>
+        <div class="settings-card row-setting">
+          <div><h3>高对比显示</h3><p>让文字和按钮更加醒目。</p></div>
+          <label class="switch"><input id="contrastToggle" aria-label="高对比显示" type="checkbox" /><span></span></label>
+        </div>
+        <div class="settings-card row-setting">
+          <div><h3>自动朗读回答</h3><p>收到回答后自动读给您听。</p></div>
+          <label class="switch"><input id="autoSpeakToggle" aria-label="自动朗读回答" type="checkbox" /><span></span></label>
+        </div>
+      </section>
+    </main>
+    </div>
+
+    <aside id="speechPlayer" class="speech-player" aria-label="朗读控制" hidden>
+      <div class="speech-player-head">
+        <strong id="speechStatus" role="status">正在朗读回答</strong>
+        <button id="closeSpeechPlayer" class="player-close" type="button" aria-label="结束朗读">结束</button>
+      </div>
+      <label class="progress-label" for="speechProgress"><span>朗读位置</span><span id="speechPercent">0%</span></label>
+      <input id="speechProgress" class="speech-progress" type="range" min="0" max="100" value="0" step="1" aria-label="拖动选择朗读位置" />
+      <div class="speech-controls">
+        <button id="pauseSpeechButton" class="primary-button" type="button">⏸ 暂停</button>
+        <div class="speed-controls" role="group" aria-label="朗读速度">
+          <button type="button" data-rate="0.7">慢速</button>
+          <button type="button" data-rate="0.9" class="selected">正常</button>
+          <button type="button" data-rate="1.2">快速</button>
+        </div>
+      </div>
+      <p class="player-help">暂停后点击“继续”会接着读；拖动滑块可跳到想听的位置。</p>
+    </aside>
+
+
+  </div>
+
+  <dialog id="renameDialog" aria-labelledby="renameTitle">
+    <form id="renameForm"><h2 id="renameTitle">修改对话名称</h2>
+      <label>对话名称<input id="renameInput" required maxlength="100"></label>
+      <p id="renameStatus" role="status"></p>
+      <div class="dialog-actions"><button id="cancelRename" type="button" class="secondary-button">取消</button>
+      <button class="primary-button" type="submit">保存</button></div>
+    </form>
+  </dialog>
+  <dialog id="historyDialog" aria-labelledby="historyTitle">
+    <div class="dialog-heading"><h2 id="historyTitle">历史对话</h2><button class="secondary-button" id="closeHistory">关闭</button></div>
+    <div id="threadList"></div>
+    <p id="historyNotice" role="status"></p>
+  </dialog>
+  <dialog id="authDialog" aria-labelledby="authTitle">
+    <form id="authForm">
+      <h2 id="authTitle">登录安心助手</h2>
+      <label>用户名<input id="username" required autocomplete="username" pattern="[A-Za-z0-9_]{3,32}" placeholder="3 至 32 位字母、数字或下划线"></label>
+      <label>密码<input id="password" type="password" minlength="8" maxlength="64" required autocomplete="current-password" placeholder="至少 8 个字符"></label>
+      <p id="authStatus" role="status"></p>
+      <button class="primary-button" id="authSubmit">登录</button>
+      <button type="button" class="secondary-button" id="authSwitch">注册新账号</button>
+      <button type="button" class="secondary-button" id="authCancel">关闭</button>
+    </form>
+  </dialog>
+  <dialog id="formDialog">
+    <form method="dialog" id="dialogForm">
+      <div class="dialog-heading"><h2 id="dialogTitle">新增</h2><button id="closeDialogButton" type="button" class="close-button" aria-label="关闭">×</button></div>
+      <label>内容<textarea id="dialogContent" required rows="3"></textarea></label>
+      <label>时间（选填）<input id="memoWhen" placeholder="例如：每天晚上八点"></label>
+      <label>细节（选填）<textarea id="memoDetails" rows="2" placeholder="例如：地点、要带的东西"></textarea></label>
+      <p id="memoNote" class="confirm-note" role="status">请核对内容后保存。</p>
+      <div class="dialog-actions"><button id="cancelDialogButton" type="button" class="secondary-button">取消</button><button id="confirmDialog" type="submit" value="default" class="primary-button">确认保存</button></div>
+    </form>
+  </dialog>
+
+  <script>const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+
+const storage = {
+  get(key, fallback = null) {
+    try { const value = localStorage.getItem(key); return value === null ? fallback : value; }
+    catch (_) { return fallback; }
+  },
+  set(key, value) {
+    try { localStorage.setItem(key, value); }
+    catch (_) { /* 本地文件模式可能禁用存储，但不能影响页面交互 */ }
+  }
+};
+
+function readList(key, fallback) {
+  try { return JSON.parse(storage.get(key, JSON.stringify(fallback))); }
+  catch (_) { return fallback; }
+}
+
+let account = null;
+try { account = JSON.parse(sessionStorage.getItem('anxinSession')); } catch {}
+function localMemos(key, fallback = []) {
+  const rows = readList(key, fallback);
+  return rows.map(item => ({...item, id: /^[A-Za-z0-9_-]{1,128}$/.test(item.id || '') ? String(item.id) : makeId()}));
+}
+let conversationId = null;
+let historyReady = false;
+const state = {
+  font: storage.get('font', 'normal'),
+  contrast: storage.get('contrast') === 'true',
+  autoSpeak: storage.get('autoSpeak') === 'true',
+  memos: account ? [] : localMemos('memos', [{text:'周五上午去社区医院复查',created:'今天 09:30'},{text:'买牛奶和降糖饼干',created:'昨天 16:20'}]),
+};
+
+function makeId() { return `${Date.now()}-${Math.random().toString(16).slice(2)}`; }
+
+
+function persist() {
+  storage.set('font', state.font); storage.set('contrast', state.contrast); storage.set('autoSpeak', state.autoSpeak);
+}
+
+function applySettings() {
+  const sizes = { normal: '18px', large: '21px', xlarge: '24px' };
+  document.documentElement.style.setProperty('--base', sizes[state.font]);
+  document.body.classList.toggle('high-contrast', state.contrast);
+  $('#contrastToggle').checked = state.contrast; $('#autoSpeakToggle').checked = state.autoSpeak;
+  $$('.segmented button').forEach(b => b.classList.toggle('selected', b.dataset.font === state.font));
+  $('#fontLevel').textContent = ({normal:'标准',large:'大',xlarge:'特大'})[state.font];
+}
+
+let chatPosition = { top: 0, anchor: null, offset: 0 };
+const menuToggle = $('#menuToggle');
+function setMenu(open) {
+  menuToggle.setAttribute('aria-expanded', String(open));
+  $('#siteNav').classList.toggle('open', open);
+}
+menuToggle.onclick = () => setMenu(menuToggle.getAttribute('aria-expanded') !== 'true');
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && $('#siteNav').classList.contains('open')) {
+    setMenu(false);
+    menuToggle.focus();
+  }
+});
+function showPage(id) {
+  if ($('#siteNav').classList.contains('open')) {
+    setMenu(false);
+    menuToggle.focus();
+  }
+  const scroller = $('#mainContent');
+  const current = $('.page.active');
+  if (id === 'memoPage') refreshMemos();
+  if (current.id === id) return;
+  if (current.id === 'chatPage') {
+    const headerBottom = scroller.getBoundingClientRect().top;
+    const anchor = $$('.message, #chatComposer', current).find(item => !item.hidden && item.getBoundingClientRect().bottom > headerBottom);
+    chatPosition = { top: scroller.scrollTop, anchor, offset: anchor ? anchor.getBoundingClientRect().top : 0 };
+    cancelRecording();
+  }
+  $$('[data-bar-for]').forEach(bar => { bar.hidden = bar.dataset.barFor !== id; });
+  $$('.page').forEach(p => p.classList.toggle('active', p.id === id));
+  $$('.nav-item').forEach(button => {
+    const active = button.dataset.page === id;
+    button.classList.toggle('active', active);
+    if (active) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
+  let top = 0;
+  if (id === 'chatPage') {
+    const { anchor, offset } = chatPosition;
+    top = anchor && !anchor.hidden
+      ? scroller.scrollTop + anchor.getBoundingClientRect().top - offset
+      : chatPosition.top;
+  }
+  scroller.scrollTo({ top, behavior: 'instant' });
+}
+
+$$('.nav-item').forEach(button => button.addEventListener('click', () => showPage(button.dataset.page)));
+$('#fontButton').addEventListener('click', () => { const order = ['normal','large','xlarge']; state.font = order[(order.indexOf(state.font)+1)%3]; persist(); applySettings(); });
+$$('[data-font]').forEach(button => button.addEventListener('click', () => { state.font=button.dataset.font; persist(); applySettings(); }));
+$('#contrastToggle').addEventListener('change', e => { state.contrast=e.target.checked; persist(); applySettings(); });
+$('#autoSpeakToggle').addEventListener('change', e => { state.autoSpeak=e.target.checked; persist(); });
+
+function answerText(summary, detail) {
+  return [summary, detail].filter(Boolean).join(' ').trim();
+}
+
+const speechState={text:'',index:0,rate:.9,paused:false,playing:false,runId:0};
+function updateSpeechPlayer() {
+  const total=Math.max(1,speechState.text.length),percent=Math.min(100,Math.round(speechState.index/total*100));
+  $('#speechProgress').max=total; $('#speechProgress').value=Math.min(speechState.index,total); $('#speechPercent').textContent=`${percent}%`;
+  $('#pauseSpeechButton').textContent=speechState.paused ? '继续' : speechState.playing ? '暂停' : '重新朗读';
+  $('#speechStatus').textContent = speechState.paused ? '朗读已暂停' : speechState.playing ? '正在朗读回答' : speechState.index === total ? '朗读完毕' : '朗读已中断';
+  $$('[data-rate]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.rate)===speechState.rate));
+}
+function speakFrom(index) {
+  if(!speechState.text) return;
+  const thisRun = ++speechState.runId;
+  speechSynthesis.cancel();
+  if (speechSynthesis.paused) speechSynthesis.resume();
+  speechState.index=Math.max(0,Math.min(index,speechState.text.length-1)); speechState.paused=false; speechState.playing=true;
+  const start=speechState.index,utterance=new SpeechSynthesisUtterance(speechState.text.slice(start));
+  utterance.lang='zh-CN'; utterance.rate=speechState.rate;
+  utterance.onboundary=e=>{if(thisRun!==speechState.runId)return;speechState.index=start+e.charIndex;updateSpeechPlayer();};
+  utterance.onend=()=>{if(thisRun!==speechState.runId)return;speechState.index=speechState.text.length;speechState.playing=false;speechState.paused=false;updateSpeechPlayer();};
+  utterance.onerror=()=>{if(thisRun===speechState.runId){speechState.playing=false;speechState.paused=false;updateSpeechPlayer();}};
+  speechSynthesis.speak(utterance); updateSpeechPlayer();
+}
+function startSpeech(text) {
+  if(!('speechSynthesis' in window)) return alert('当前浏览器不支持朗读，请换用最新版 Chrome。');
+  speechState.text=text.trim(); speechState.index=0; $('#speechPlayer').hidden=false; speakFrom(0);
+}
+function stopSpeech() { speechState.runId+=1; speechSynthesis.cancel(); speechState.text=''; speechState.index=0; speechState.paused=false; speechState.playing=false; $('#speechPlayer').hidden=true; }
+$('#pauseSpeechButton').addEventListener('click',()=>{
+  if(!speechState.text)return;
+  if(speechState.paused && !speechState.playing){speakFrom(speechState.index);}
+  else if(speechState.paused){speechSynthesis.resume();speechState.paused=false;speechState.playing=true;}
+  else if(speechState.playing){speechSynthesis.pause();speechState.paused=true;}
+  else speakFrom(0);
+  updateSpeechPlayer();
+});
+$('#closeSpeechPlayer').addEventListener('click',stopSpeech);
+$('#speechProgress').addEventListener('input',e=>{speechState.index=Number(e.target.value);updateSpeechPlayer();});
+$('#speechProgress').addEventListener('change',e=>{const position=Number(e.target.value);if(position>=speechState.text.length){speechState.index=speechState.text.length;speechState.runId++;speechState.paused=false;speechSynthesis.cancel();speechState.playing=false;updateSpeechPlayer();}else speakFrom(position);});
+$$('[data-rate]').forEach(button=>button.addEventListener('click',()=>{speechState.rate=Number(button.dataset.rate);if(speechState.playing && !speechState.paused)speakFrom(speechState.index);else if(speechState.paused){speechState.runId++;speechSynthesis.cancel();speechState.playing=false;updateSpeechPlayer();}else updateSpeechPlayer();}));
+
+function addMessage(role, summary, detail='', speakText='') {
+  const article=document.createElement('article'); article.className=`message ${role}`;
+  if(role==='user') article.innerHTML=`<p class="message-label">您</p><div class="bubble"><p>${escapeHtml(summary)}</p></div>`;
+  else {
+    const fullText = answerText(summary, detail);
+    const collapsible = Boolean(detail) && fullText.length > 56;
+    const detailId = 'detail-' + makeId();
+    article.innerHTML = `<p class="message-label">安心助手</p>
+      <div class="bubble answer-card">
+        <p class="answer-summary">${escapeHtml(summary)}</p>
+        ${detail ? `<p id="${detailId}" class="answer-detail" ${collapsible ? 'hidden' : ''}>${escapeHtml(detail)}</p>` : ''}
+        ${collapsible ? `<button class="expand-button" aria-controls="${detailId}" aria-expanded="false">展开全文</button>` : ''}
+      </div>
+      <button class="speak-button" type="button">听完整回答</button>`;
+    const toggle = article.querySelector('.expand-button');
+    if (toggle) toggle.onclick = () => {
+      const content = article.querySelector('.answer-detail');
+      content.hidden = !content.hidden;
+      toggle.setAttribute('aria-expanded', String(!content.hidden));
+      toggle.textContent = content.hidden ? '展开全文' : '收起全文';
+    };
+    article.querySelector('.speak-button').onclick = () => startSpeech(speakText || fullText);
+  }
+  $('#messages').append(article); if ($('#chatPage').classList.contains('active') && document.activeElement !== input) article.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function escapeHtml(value) { const d=document.createElement('div'); d.textContent=value; return d.innerHTML; }
+function suggestMemo(text) {
+  const command = /^(?:请)?(?:帮我|给我|替我)?(?:记一下|记下来|记下|记住|记一条备忘|新增备忘|添加备忘|备忘录?|提醒我|提醒一下)[，,：:\s]*/;
+  const explicit = command.test(text);
+  const content = text.replace(command, '').trim();
+  const timePattern = /(?:每天|每日|每晚|每早|每周[一二三四五六日天]?|今天|明天|后天|(?:下周|周|星期)[一二三四五六日天]|下周|今晚|明早|早上|上午|中午|下午|晚上|凌晨|[零〇一二两三四五六七八九十\d]+(?:点|时)(?:半|一刻|三刻|[零一二三四五六七八九十\d]+分?)?|\d{1,2}[:：]\d{2})+/;
+  const when = content.match(timePattern)?.[0] || '';
+  if (!explicit) {
+    if (/[？?]|吗|怎么|为什么|是不是|要不要|能不能|几点|不要提醒|不用提醒|不需要提醒|不用记|不要记|不用去|不去|取消/.test(text)) return null;
+    if (!/提醒我/.test(content) && !(when && /吃药|服药|要去|要带|记得|开会|复查|买|预约|接孩子|取快递|去.{1,20}/.test(content))) return null;
+  }
+  const task = content.replace(when, '').replace(/^[，,\s]*(?:请)?(?:提醒我)?(?:我)?(?:都)?(?:需要|要)?/, '').trim();
+  return {text:task || content, when, details:''};
+}
+
+async function api(path, body, method = body === undefined ? 'GET' : 'POST') {
+  const session = account;
+  const headers = {};
+  if (account) headers.Authorization = 'Bearer ' + account.accessToken;
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const response = await fetch('/api/' + path, {
+    method, cache:'no-store', headers, body: JSON.stringify(body)
+  });
+  if (response.status === 204) return;
+  const data = await response.json().catch(error => {
+    if (response.ok) throw error;
+    return {};
+  });
+  if (!response.ok) {
+    if (response.status === 401 && session && account === session) changeAccount(null);
+    throw Object.assign(new Error(data.message || '请求失败，请稍后重试。'), {status:response.status});
+  }
+  return data;
+}
+
+function changeAccount(next) {
+  pendingSend = null;
+  cancelRecording();
+  if (!$('#speechPlayer').hidden) stopSpeech();
+  $('#threadTitle').textContent = '新对话';
+  account = next;
+  if (next) sessionStorage.setItem('anxinSession', JSON.stringify(next));
+  else sessionStorage.removeItem('anxinSession');
+  conversationId = null;
+  historyReady = false;
+  state.memos = next ? [] : localMemos('memos');
+  resetMemoSync();
+  $('#messages').replaceChildren();
+  $('#memoSearch').value = '';
+  $('#accountButton').textContent = next ? '退出登录' : '登录';
+  $('#continueChat').hidden = true;
+  $('#chatComposer').hidden = false;
+  $('#collapseChat').hidden = true;
+  updateComposer(input.value ? 'type' : 'idle');
+  renderLists();
+}
+
+function rememberThread(id, title) {
+  conversationId = id;
+  $('#threadTitle').textContent = title || '新对话';
+  if (account) sessionStorage.setItem('thread:' + account.user.id, JSON.stringify({id, title}));
+}
+
+async function restoreHistory() {
+  const saved = JSON.parse(sessionStorage.getItem('thread:' + account.user.id) || 'null');
+  const thread = saved || (await api('conversations?size=1')).items[0] || {};
+  await loadThread(thread);
+}
+
+async function loadThread(thread, switching = false) {
+  const rows = [];
+  if (thread.id) {
+    let page = 0;
+    let result;
+    do {
+      result = await api('conversations/' + thread.id + '/messages?size=100&page=' + page++);
+      rows.push(...result.items);
+    } while (page < result.totalPages);
+  }
+  if (switching) resetThreadView();
+  rememberThread(thread.id || null, thread.title);
+  $('#messages').replaceChildren();
+  for (const row of rows) addMessage(row.role, row.content, row.followUp || '', row.speakText);
+  historyReady = true;
+  if (rows.length && !input.value) collapseComposer();
+}
+
+function resetThreadView() {
+  pendingSend = null;
+  cancelRecording();
+  if (!$('#speechPlayer').hidden) stopSpeech();
+  input.value = '';
+  $('#messages').replaceChildren();
+  $('#continueChat').hidden = true;
+  $('#chatComposer').hidden = false;
+  $('#collapseChat').hidden = true;
+  updateComposer('idle');
+  $('#mainContent').scrollTop = 0;
+}
+
+function canLeaveDraft() {
+  return (!input.value.trim() && !recognition) || confirm('离开后将清空未发送的输入，继续吗？');
+}
+$('#newChat').onclick = () => {
+  if (waiting || !canLeaveDraft()) return;
+  showPage('chatPage');
+  resetThreadView();
+  rememberThread(null, '新对话');
+  historyReady = true;
+};
+$('#renameChat').onclick = () => {
+  if (waiting) return;
+  if (!account) return openLogin();
+  $('#renameStatus').textContent = '';
+  $('#renameInput').value = $('#threadTitle').textContent;
+  $('#renameDialog').showModal();
+  $('#renameInput').select();
+};
+$('#cancelRename').onclick = () => $('#renameDialog').close();
+$('#renameForm').onsubmit = async event => {
+  event.preventDefault();
+  const title = $('#renameInput').value.trim();
+  if (!title) { $('#renameStatus').textContent = '请输入名称。'; return; }
+  if (waiting) return;
+  waiting = true;
+  try {
+    const path = conversationId ? 'conversations/' + conversationId + '/title' : 'conversations';
+    const updated = await api(path, {title});
+    rememberThread(updated.id, updated.title);
+    historyReady = true;
+    $('#renameDialog').close();
+  } catch (error) { $('#renameStatus').textContent = error.message; }
+  finally { waiting = false; }
+};
+$('#closeHistory').onclick = () => $('#historyDialog').close();
+$('#chatHistory').onclick = async () => {
+  if (waiting) return;
+  showPage('chatPage');
+  if (!account) return openLogin();
+  const dialog = $('#historyDialog');
+  const list = $('#threadList');
+  const notice = $('#historyNotice');
+  list.replaceChildren();
+  notice.textContent = '正在读取…';
+  dialog.showModal();
+  waiting = true;
+  try {
+    let page = 0;
+    let result;
+    do {
+      result = await api('conversations?size=100&page=' + page++);
+      for (const thread of result.items) {
+        const button = document.createElement('button');
+        button.className = 'secondary-button';
+        button.textContent = thread.title + ' · ' + new Date(thread.updatedAt).toLocaleDateString('zh-CN');
+        button.onclick = async () => {
+          if (waiting || !canLeaveDraft()) return;
+          waiting = true;
+          try { await loadThread(thread, true); dialog.close(); }
+          catch (error) { notice.textContent = error.message; }
+          finally { waiting = false; }
+        };
+        list.append(button);
+      }
+    } while (page < result.totalPages);
+    notice.textContent = list.childElementCount ? '' : '还没有历史对话。';
+  } catch (error) { notice.textContent = error.message; }
+  finally { waiting = false; }
+};
+
+let registering = false;
+function openLogin() {
+  if (location.protocol === 'file:') {
+    alert('请通过后端服务的网址打开网站，再登录聊天。');
+    return;
+  }
+  $('#authStatus').textContent = '';
+  $('#authDialog').showModal();
+}
+$('#authSwitch').onclick = () => {
+  registering = !registering;
+  $('#authTitle').textContent = registering ? '注册安心助手' : '登录安心助手';
+  $('#authSubmit').textContent = registering ? '注册并登录' : '登录';
+  $('#authSwitch').textContent = registering ? '已有账号，去登录' : '注册新账号';
+  $('#password').autocomplete = registering ? 'new-password' : 'current-password';
+  $('#authStatus').textContent = '';
+};
+$('#authCancel').onclick = () => $('#authDialog').close();
+$('#authDialog').onclose = () => { $('#password').value = ''; };
+$('#accountButton').onclick = async () => {
+  if (!account) return openLogin();
+  if (waiting || !confirm('要退出当前账号吗？')) return;
+  try {
+    await api('auth/logout', {});
+    input.value = '';
+    changeAccount(null);
+  } catch (error) { alert(error.message); }
+};
+$('#authForm').onsubmit = async event => {
+  event.preventDefault();
+  if (waiting) return;
+  waiting = true;
+  $('#authSubmit').disabled = true;
+  const credentials = {username:$('#username').value.trim(), password:$('#password').value};
+  try {
+    if (registering) await api('auth/register', credentials);
+    changeAccount(await api('auth/login', credentials));
+    $('#authDialog').close();
+    await restoreHistory();
+  } catch (error) {
+    if ($('#authDialog').open) $('#authStatus').textContent = error.message;
+    else $('#speechHint').textContent = error.message;
+  } finally {
+    waiting = false;
+    $('#authSubmit').disabled = false;
+    $('#sendButton').disabled = !input.value.trim();
+  }
+};
+
+const input = $('#messageInput');
+let mode = 'idle';
+let recognition = null;
+let returnMode = 'idle';
+let waiting = false;
+let pendingSend = null;
+
+function updateComposer(next, hint) {
+  mode = next;
+  $('#chatComposer').dataset.mode = next;
+  const sendFailed = next === 'sendFailed';
+  const editing = next === 'review' || next === 'type' || sendFailed;
+  const continuing = $('#messages').childElementCount > 0;
+  $('#chatTitle').textContent = {sendFailed:'还没收到回复',retry:'再试一次？',idle:'您好，想聊点什么？',listen:'正在听您说话…',review:'看看这句话，对吗？',type:continuing ? '继续对话' : '您想说什么？'}[next];
+  $('#speechHint').textContent = hint || {idle:'点“开始说话”，说完可以核对文字。',listen:'说完后，点“说好了”核对文字。',review:'点文字可以修改，确认后再发送。',type:'写好后，点下面的按钮发送。'}[next];
+  $('#liveTranscript').hidden = next !== 'listen';
+  $('#draftArea').hidden = !editing;
+  $('#sendButton').hidden = !editing;
+  $('#sendButton').textContent = sendFailed ? '再试一次' : '确认发送';
+  $('#editFailedMessage').hidden = !sendFailed;
+  $('#micButton').hidden = sendFailed;
+  $('#sendButton').disabled = waiting || !input.value.trim();
+  $('#typeButton').hidden = next !== 'idle' && next !== 'retry';
+  $('#typeLabel').textContent = next === 'retry' ? '改用打字' : '打字提问';
+  $('#cancelSpeech').hidden = next !== 'listen';
+  $('#micLabel').textContent = next === 'retry' ? '再说一次' : editing ? '继续说' : next === 'listen' ? '说好了' : '开始说话';
+  $('#micButton').className = editing ? 'secondary-button' : 'primary-button';
+}
+input.addEventListener('input', () => {
+  if (mode === 'sendFailed') updateComposer('type');
+  $('#sendButton').disabled = waiting || !input.value.trim();
+});
+$('#editFailedMessage').onclick = () => { updateComposer('type'); input.focus(); };
+$('#typeButton').onclick = () => { updateComposer('type'); input.focus(); };
+function collapseComposer() {
+  cancelRecording();
+  $('#chatComposer').hidden = true;
+  $('#continueChat').hidden = false;
+  $('#continueChat').setAttribute('aria-expanded', 'false');
+  $('#continueChat').focus({preventScroll:true});
+}
+$('#collapseChat').onclick = collapseComposer;
+$('#continueChat').onclick = () => {
+  $('#collapseChat').hidden = false;
+  $('#chatComposer').hidden = false;
+  $('#continueChat').setAttribute('aria-expanded', 'true');
+  $('#continueChat').hidden = true;
+  updateComposer('type');
+  input.focus();
+};
+$('#sendButton').onclick = async () => {
+  const text = input.value.trim();
+  if (!text || waiting) return;
+  if (!account) return openLogin();
+  const session = account;
+  const source = mode === 'review' ? 'speech' : 'text';
+  waiting = true;
+  input.readOnly = true;
+  $('#micButton').disabled = true;
+  $('#editFailedMessage').hidden = true;
+  $('#sendButton').disabled = true;
+  $('#sendButton').textContent = '请稍候';
+  $('#collapseChat').disabled = true;
+  $('#speechHint').textContent = '正在发送，请稍候…';
+  const slowNotice = setTimeout(() => {
+    if (session === account) $('#speechHint').textContent = '回复需要一点时间，请稍等。';
+  }, 8000);
+  const proposal = suggestMemo(text);
+  let result;
+  try {
+    if (!historyReady) await restoreHistory();
+    if (!conversationId) {
+      const thread = await api('conversations', {});
+      rememberThread(thread.id, thread.title);
+    }
+    if (!pendingSend || pendingSend.thread !== conversationId || pendingSend.text !== text) {
+      pendingSend = {thread:conversationId, text, source, id:makeId()};
+    }
+    const endpoint = proposal ? 'memo-suggestions' : 'messages';
+    $('#speechHint').textContent = '正在等安心助手回复…';
+    result = await api('conversations/' + conversationId + '/' + endpoint, {
+      content:text, inputSource:pendingSend.source, clientMessageId:pendingSend.id
+    });
+  } catch (error) {
+    const reason = error.status ? error.message : '暂时没有收到服务器的回复，请检查网络后再试。';
+    updateComposer('sendFailed', reason + ' 您的文字已保留。');
+    return;
+  } finally {
+    clearTimeout(slowNotice);
+    waiting = false;
+    input.readOnly = false;
+    $('#micButton').disabled = false;
+    $('#collapseChat').disabled = false;
+    $('#sendButton').disabled = !input.value.trim();
+  }
+  if (session !== account) return;
+  pendingSend = null;
+  addMessage('user', text);
+  if ($('#threadTitle').textContent === '新对话') rememberThread(conversationId, Array.from(text).slice(0,40).join(''));
+  addMessage('assistant', result.reply, result.followUp || '', result.speakText);
+  input.value = '';
+  collapseComposer();
+  if (proposal) openDialog(null, proposal, $('#messages').lastElementChild);
+  if (state.autoSpeak) startSpeech(result.speakText || answerText(result.reply, result.followUp));
+};
+
+function cancelRecording() {
+  if (!recognition) return;
+  const session = recognition;
+  recognition = null;
+  session.abort();
+  updateComposer(returnMode);
+}
+$('#cancelSpeech').onclick = cancelRecording;
+$('#micButton').onclick = () => {
+  if (recognition) { recognition.stop(); return; }
+  const Engine = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Engine) {
+    updateComposer('type', '当前浏览器无法识别语音，您可以在下方打字。');
+    input.focus();
+    return;
+  }
+  returnMode = mode;
+  const session = new Engine();
+  recognition = session;
+  let words = '';
+  session.lang = 'zh-CN';
+  session.interimResults = true;
+  session.onresult = event => {
+    if (recognition !== session) return;
+    words = Array.from(event.results, item => item[0].transcript).join('').trim();
+    $('#liveText').textContent = input.value + words || '等待识别文字…';
+  };
+  function failed(message) {
+    if (recognition !== session) return;
+    recognition = null;
+    updateComposer('retry', message);
+  }
+  session.onerror = event => failed(event.error === 'not-allowed' ? '未获得麦克风权限，您可以打字，或允许使用麦克风后再试。' : '这次没有识别成功，您可以再试一次或打字。');
+  session.onend = () => {
+    if (recognition !== session) return;
+    recognition = null;
+    if (words) input.value += words;
+    updateComposer(words ? 'review' : 'retry', words ? '' : '没有听清，请再试一次或打字。');
+  };
+  $('#liveText').textContent = input.value || '等待识别文字…';
+  updateComposer('listen');
+  try { session.start(); } catch { failed('麦克风暂时无法使用，您可以在下方打字。'); }
+};
+updateComposer('idle');
+
+function clockNumber(value) {
+  if (!value) return 0;
+  if (/^\d+$/.test(value)) return Number(value);
+  const digits = '零一二三四五六七八九';
+  value = value.replace(/两/g,'二').replace(/〇/g,'零');
+  if (value.includes('十')) {
+    const [tens, ones] = value.split('十');
+    return (tens ? digits.indexOf(tens) : 1) * 10 + (ones ? digits.indexOf(ones) : 0);
+  }
+  return Number([...value].map(c => digits.indexOf(c)).join(''));
+}
+
+function nextMemoTime(memo, now) {
+  const value = memo.when || memo.text || '';
+  const clock = value.match(/([零〇一二两三四五六七八九十\d]+)(?:[:：](\d{2})|[点时](半|一刻|三刻|[零〇一二三四五六七八九十\d]+分?)?)/);
+  const week = value.match(/(每|下|本|这)?(?:周|星期)([一二三四五六日天])/);
+  const relative = value.match(/今天|今日|今晚|明天|明早|后天/);
+  const date = value.match(/(?:(\d{4})[-年/])?(\d{1,2})[-月/](\d{1,2})(?:日|号)?/);
+  const daily = /每[天日早晚]/.test(value);
+  if (!(clock || week || relative || date || daily)) return null;
+  const anchor = new Date(memo.scheduleAnchor || memo.created);
+  const base = Number.isNaN(anchor.getTime()) ? now : anchor;
+  const day = new Date(base);
+  let repeat = 0;
+  if (date) {
+    day.setFullYear(Number(date[1] || base.getFullYear()), Number(date[2])-1, Number(date[3]));
+    if (day.getMonth() !== Number(date[2])-1 || day.getDate() !== Number(date[3])) return null;
+  } else if (week) {
+    if (week[1] === '每') { day.setTime(now.getTime()); repeat=7; }
+    const target = ('一二三四五六日'.indexOf(week[2].replace('天','日')) + 1);
+    const delta = target - (day.getDay() || 7);
+    day.setDate(day.getDate() + (week[1] === '下' ? delta+7 : /^(本|这)$/.test(week[1]) ? delta : (delta+7)%7));
+  } else if (relative) {
+    day.setDate(day.getDate() + (/明/.test(relative[0]) ? 1 : relative[0]==='后天' ? 2 : 0));
+  } else if (daily) {
+    day.setTime(now.getTime()); repeat=1;
+  }
+  let hour = clockNumber(clock?.[1]);
+  const minutes = clock?.[2] || clock?.[3] || '';
+  const minute = ({半:30,一刻:15,三刻:45})[minutes] ?? clockNumber(minutes.replace('分',''));
+  if (hour>23 || minute>59) return null;
+  if (hour<12 && /下午|傍晚|晚上|今晚|每晚/.test(value)) hour+=12;
+  if (hour>0 && hour<11 && /中午/.test(value)) hour+=12;
+  if (hour===12 && /凌晨/.test(value)) hour=0;
+  day.setHours(hour,minute,0,0);
+  const threshold = new Date(now);
+  if (!clock) threshold.setHours(0,0,0,0);
+  else threshold.setSeconds(0,0);
+  if (day < threshold && repeat) day.setDate(day.getDate()+repeat);
+  if (day < threshold) return null;
+  return {day, hasClock:Boolean(clock)};
+}
+
+function renderUpcomingMemo() {
+  const now = new Date();
+  let first;
+  for (const memo of state.memos) {
+    const occurrence = nextMemoTime(memo,now);
+    if (occurrence && (!first || occurrence.day < first.day)) first = {...occurrence,memo};
+  }
+  const banner = $('#upcomingMemo');
+  let when = '近期暂无提醒';
+  let task = '';
+  if (first) {
+    const {day, hasClock, memo} = first;
+    when = day.toDateString() === now.toDateString() ? '今天'
+      : day.toLocaleDateString('zh-CN', {month:'long', day:'numeric', weekday:'short'});
+    if (hasClock) {
+      const time = day.toLocaleTimeString('zh-CN', {hour:'numeric', minute:'2-digit', hourCycle:'h12'});
+      when += ' ' + time;
+    }
+    task = memo.text;
+  }
+  const dateLine = $('#reminderWhen');
+  const taskLine = $('#reminderTask');
+  if (dateLine.textContent !== when) dateLine.textContent = when;
+  if (taskLine.textContent !== task) taskLine.textContent = task;
+  taskLine.hidden = !task;
+  banner.title = task ? when + ' · ' + task : when;
+}
+setInterval(renderUpcomingMemo, 30000);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) { renderUpcomingMemo(); refreshMemos(); }
+});
+window.addEventListener('focus', () => refreshMemos());
+window.addEventListener('online', () => refreshMemos());
+
+let memoSequence = 0;
+let loadingMemos = null;
+
+function syncStatus(message = '') {
+  $('#memoSyncStatus').textContent = message;
+  $('#memoSyncStatus').hidden = !message;
+}
+function updateGuestImport() {
+  const count = account ? readList('memos', []).length : 0;
+  const button = $('#importGuest');
+  button.hidden = !count;
+  button.textContent = '导入本机未登录时的备忘（' + count + ' 条）';
+}
+function resetMemoSync() {
+  memoSequence++;
+  loadingMemos = null;
+  syncStatus();
+  updateGuestImport();
+  if (account) refreshMemos();
+}
+function isoTime(value, fallback) {
+  const time = new Date(value);
+  return Number.isNaN(time.getTime()) ? fallback : time.toISOString();
+}
+async function migrateMemos(key, session) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return;
+  const rows = JSON.parse(raw);
+  // Write missing IDs before the first request so an interrupted import can be replayed.
+  for (const item of rows) {
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(item.id || '')) item.id = makeId();
+  }
+  localStorage.setItem(key, JSON.stringify(rows));
+  for (const item of rows) {
+    if (account !== session) return;
+    const created = isoTime(item.created, new Date().toISOString());
+    const fields = {text:item.text, when:item.when || '', details:item.details || '',
+      scheduleAnchor:isoTime(item.scheduleAnchor || item.created, created)};
+    try {
+      await api('memos', {id:item.id, created, fields});
+    } catch (error) {
+      if (error.status !== 410) throw error;
+    }
+    // Re-read the key to preserve other entries added during this request.
+    const remaining = JSON.parse(localStorage.getItem(key) || '[]').filter(row => row.id !== item.id);
+    if (remaining.length) localStorage.setItem(key, JSON.stringify(remaining));
+    else localStorage.removeItem(key);
+  }
+}
+function refreshMemos() {
+  if (!account || loadingMemos) return loadingMemos;
+  const session = account;
+  const seq = ++memoSequence;
+  loadingMemos = (async () => {
+    try {
+      let migrationNotice = '';
+      try { await migrateMemos('memos:' + session.user.id, session); }
+      catch { migrationNotice = '部分旧备忘尚未导入，原记录仍在本机。重新打开备忘页可重试。'; }
+      if (account !== session) return;
+      const rows = await api('memos');
+      if (seq !== memoSequence) return;
+      state.memos = rows;
+      renderLists();
+      syncStatus(migrationNotice);
+    } catch (error) {
+      if (seq === memoSequence) syncStatus('备忘同步未完成。请检查网络，重新打开备忘页再试。');
+    } finally {
+      if (seq === memoSequence) loadingMemos = null;
+    }
+  })();
+  return loadingMemos;
+}
+function applyMemoChange(rows) {
+  // Ignore reads started before this write was acknowledged.
+  memoSequence++;
+  loadingMemos = null;
+  state.memos = rows;
+  renderLists();
+  if (account) refreshMemos();
+}
+$('#importGuest').onclick = async () => {
+  const session = account;
+  if (!session || !confirm('把本机未登录时的备忘移入账号“' + session.user.username + '”吗？')) return;
+  const button = $('#importGuest');
+  button.disabled = true;
+  try {
+    await migrateMemos('memos', session);
+    if (session === account) { await loadingMemos; await refreshMemos(); }
+  } catch {
+    if (session === account) syncStatus('导入未完成，请再点一次导入。');
+  } finally {
+    updateGuestImport();
+    button.disabled = false;
+  }
+};
+
+function renderLists() {
+  renderUpcomingMemo();
+  const query=$('#memoSearch').value.trim().toLowerCase();
+  const memos=state.memos.filter(m=>[m.text,m.when,m.details].filter(Boolean).join(' ').toLowerCase().includes(query));
+  $('#memoList').innerHTML=memos.length?memos.map(m=>`<article class="list-card"><div class="card-top"><div><p>${escapeHtml(m.text)}</p>${m.when ? `<p>时间：${escapeHtml(m.when)}</p>` : ''}${m.details ? `<p>细节：${escapeHtml(m.details)}</p>` : ''}<small>保存于 ${escapeHtml(m.revision ? new Date(m.created).toLocaleString('zh-CN') : m.created)}</small></div><span class="status-badge">备忘</span></div><div class="card-actions"><button class="small-action" data-action="edit-memo" data-id="${m.id}">编辑</button><button class="small-action danger" data-action="delete-memo" data-id="${m.id}">删除</button></div></article>`).join(''):'<p class="empty-state">没有找到相关备忘</p>';
+}
+$('#memoSearch').addEventListener('input',renderLists);
+
+let originalMemo;
+let draftId;
+let draftOwner;
+let savingMemo = false;
+let suggestionArticle = null;
+function openDialog(item = null, proposal = null, article = null) {
+  const value = item || proposal || {};
+  originalMemo = item;
+  draftId = item?.id || makeId();
+  draftOwner = account?.user.id;
+  suggestionArticle = article;
+  $('#dialogTitle').textContent = proposal ? '是否记入备忘？' : item ? '编辑备忘' : '新增备忘';
+  $('#confirmDialog').textContent = proposal ? '是，记入备忘' : '保存';
+  $('#cancelDialogButton').textContent = proposal ? '否，暂不记录' : '取消';
+  $('#dialogContent').value = value.text || '';
+  $('#memoWhen').value = value.when || '';
+  $('#memoDetails').value = value.details || '';
+  $('#memoNote').textContent = account ? '保存后，在其他设备登录同一账号也能查看。' : '这条备忘将保存在当前浏览器。';
+  $('#formDialog').showModal();
+}
+$('#addMemoButton').onclick = () => openDialog();
+function closeDialog(saved = false) {
+  if (savingMemo) return;
+  if (suggestionArticle) {
+    const status = document.createElement('p');
+    status.textContent = saved === true ? '已存入备忘' : '这次没有记录';
+    suggestionArticle.append(status);
+    suggestionArticle = null;
+  }
+  $('#dialogForm').reset();
+  originalMemo = null;
+  $('#formDialog').close();
+}
+$('#closeDialogButton').onclick = () => closeDialog();
+$('#cancelDialogButton').onclick = () => closeDialog();
+$('#formDialog').oncancel = event => { event.preventDefault(); closeDialog(); };
+$('#dialogForm').onsubmit = async event => {
+  event.preventDefault();
+  if (!$('#formDialog').open || savingMemo) return;
+  if (account?.user.id !== draftOwner) {
+    $('#memoNote').textContent = '请先登录原账号，再保存这份草稿。';
+    openLogin();
+    return;
+  }
+  const fields = {text:$('#dialogContent').value.trim(), when:$('#memoWhen').value.trim(), details:$('#memoDetails').value.trim()};
+  if (!fields.text) return $('#dialogContent').focus();
+  const now = new Date().toISOString();
+  const previousTime = originalMemo && (originalMemo.when || originalMemo.text);
+  fields.scheduleAnchor = previousTime === (fields.when || fields.text)
+    ? isoTime(originalMemo.scheduleAnchor || originalMemo.created, now) : now;
+  const session = account;
+  savingMemo = true;
+  $('#confirmDialog').disabled = true;
+  try {
+    let saved;
+    if (!session) {
+      saved = {...fields, id:draftId, created:originalMemo?.created || new Date().toLocaleString('zh-CN')};
+    } else if (originalMemo) {
+      saved = await api('memos/' + draftId, {revision:originalMemo.revision, fields}, 'PUT');
+    } else {
+      saved = await api('memos', {id:draftId, created:now, fields});
+    }
+    if (account !== session) return;
+    const rows = originalMemo ? state.memos.map(m => m.id === draftId ? saved : m)
+      : [saved, ...state.memos.filter(m => m.id !== draftId)];
+    if (!session) localStorage.setItem('memos', JSON.stringify(rows));
+    applyMemoChange(rows);
+    savingMemo = false;
+    closeDialog(true);
+  } catch (error) {
+    $('#memoNote').textContent = (error.status ? error.message : '保存失败，请检查网络后再试。') + ' 您填写的内容已保留。';
+    if (error.status === 409 || error.status === 404) refreshMemos();
+  } finally {
+    savingMemo = false;
+    $('#confirmDialog').disabled = false;
+  }
+};
+
+async function handleListAction(event) {
+  const button = event.target.closest('[data-action]');
+  if (!button) return;
+  const memo = state.memos.find(m => m.id === button.dataset.id);
+  if (!memo) return;
+  if (button.dataset.action === 'edit-memo') return openDialog(memo);
+  if (!confirm('确定删除这条备忘吗？删除后无法恢复。')) return;
+  const session = account;
+  button.disabled = true;
+  try {
+    if (session) await api('memos/' + memo.id + '?revision=' + memo.revision, undefined, 'DELETE');
+    if (account !== session) return;
+    const remaining = state.memos.filter(m => m.id !== memo.id);
+    if (!session) localStorage.setItem('memos', JSON.stringify(remaining));
+    applyMemoChange(remaining);
+  } catch (error) {
+    if (session === account) {
+      await refreshMemos();
+      syncStatus(error.status ? error.message : '删除失败，请检查网络后重试。');
+    }
+  } finally { button.disabled = false; }
+}
+$('#memoList').addEventListener('click',handleListAction);
+
+applySettings(); renderLists(); resetMemoSync();
+if (account) {
+  $('#accountButton').textContent = '退出登录';
+  waiting = true;
+  restoreHistory().catch(error => { $('#speechHint').textContent = error.message; })
+    .finally(() => { waiting = false; $('#sendButton').disabled = !input.value.trim(); });
+}
+</script>
+</body>
+</html>

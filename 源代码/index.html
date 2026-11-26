@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#176b55" />
+  <meta name="description" content="面向老年人的简洁 AI 助手前端原型" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css?v=23" />
+  <title>安心助手</title>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button type="button" id="menuToggle" class="icon-button" aria-expanded="false" aria-controls="siteNav">菜单</button>
+      <div>
+        <p class="eyebrow">您的生活小帮手</p>
+        <h1>安心助手</h1>
+      </div>
+
+      <div id="upcomingMemo" class="upcoming-memo" role="status" aria-atomic="true">
+        <svg class="reminder-bell" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M5 16c1.5-1.7 2-3.4 2-6a5 5 0 0 1 10 0c0 2.6.5 4.3 2 6v1H5zM10 20a2.4 2.4 0 0 0 4 0M12 3v2"/></svg>
+        <div class="reminder-copy"><span id="reminderWhen">近期暂无提醒</span><strong id="reminderTask" hidden></strong></div>
+      </div>
+      <div class="header-actions"><button id="accountButton" class="icon-button">登录</button>
+      <button id="fontButton" class="icon-button" type="button" title="点击切换标准、大、特大字号">字号 <span id="fontLevel">标准</span></button>
+      </div>
+    </header>
+
+      <nav class="site-nav" id="siteNav" aria-label="主要功能">
+        <button class="nav-item active" aria-current="page" data-page="chatPage"><svg class="nav-sketch" aria-hidden="true" focusable="false" viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 44Q7 40 8 30Q8 16 27 15Q44 14 47 26Q50 41 31 44L20 52L21 44Z"/><path d="M49 29Q62 30 63 42Q64 50 57 54L58 61L48 55Q37 56 33 51"/><path d="M19 28h17M19 34h10"/></svg>聊天</button>
+        <button class="nav-item" data-page="memoPage"><svg class="nav-sketch" aria-hidden="true" focusable="false" viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M41 12L18 14Q14 14 14 19L17 56Q17 60 22 60L47 58Q51 58 51 54L50 45"/><path d="M22 22l15-1M23 30l10-1M24 50l7-1"/><path d="M35 37l18-22q2-3 5 0l3 2q2 2 0 5L43 43l-10 5Z M49 20l8 7M35 37l8 6"/></svg>备忘</button>
+        <button class="nav-item" data-page="settingsPage"><svg class="nav-sketch" aria-hidden="true" focusable="false" viewBox="0 0 72 72" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20l10-1m13 0 25-1M12 36l28-1m13 0h8M12 53l16-1m13 0 19-1"/><path d="M22 19q0-7 7-7t6 7q0 7-6 7t-7-7ZM40 35q0-7 7-7t6 7q0 7-6 7t-7-7ZM28 52q0-7 7-7t6 7q0 7-6 7t-7-7Z"/></svg>设置</button>
+      </nav>
+    <div class="page-workspace">
+      <header class="page-bar" id="threadBar" data-bar-for="chatPage">
+        <div class="thread-name"><strong id="threadTitle">新对话</strong>
+          <button id="renameChat" class="secondary-button">改名</button></div>
+        <div class="thread-actions"><button id="newChat" class="primary-button">新对话</button>
+          <button id="chatHistory" class="secondary-button">历史对话</button></div>
+      </header>
+      <header class="page-bar" data-bar-for="memoPage" hidden>
+        <h2 id="memoTitle">我的备忘</h2>
+        <button id="addMemoButton" class="primary-button" type="button">新增</button>
+      </header>
+      <header class="page-bar" data-bar-for="settingsPage" hidden>
+        <h2 id="settingsTitle">设置</h2>
+      </header>
+    <main id="mainContent">
+      <section id="chatPage" class="page active" aria-label="聊天">
+        <div id="messages" class="messages" aria-live="polite"></div>
+        <button id="continueChat" type="button" aria-controls="chatComposer" aria-expanded="false" hidden>继续对话</button>
+        <div id="chatComposer" class="composer-card chat-home">
+          <div class="landscape" aria-hidden="true"><i></i></div>
+          <div class="composer-heading">
+            <h2 id="chatTitle" tabindex="-1">您好，想聊点什么？</h2>
+            <button id="collapseChat" type="button" aria-label="收起继续对话" hidden>收起</button>
+          </div>
+          <p id="speechHint" role="status"></p>
+          <div id="liveTranscript" hidden><strong>已识别文字</strong><p id="liveText"></p></div>
+          <div id="draftArea" hidden>
+            <label for="messageInput">您的消息</label>
+            <textarea maxlength="4000" id="messageInput" rows="3"></textarea>
+          </div>
+          <button id="sendButton" class="primary-button" hidden>确认发送</button>
+          <button id="editFailedMessage" class="secondary-button" hidden>修改文字</button>
+          <button id="micButton" class="primary-button">
+            <svg class="entry-icon" aria-hidden="true" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <g class="mic-symbol"><rect x="11" y="3" width="10" height="17" rx="5"/><path d="M7 15a9 9 0 0 0 18 0M16 24v5M11 29h10"/></g>
+              <rect class="stop-symbol" x="8" y="8" width="16" height="16" rx="3" fill="currentColor" stroke="none"/>
+            </svg><span id="micLabel">开始说话</span>
+          </button>
+          <button id="typeButton" class="secondary-button">
+            <svg class="entry-icon" aria-hidden="true" focusable="false" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="6" width="28" height="20" rx="4"/>
+              <path d="M7 12h1m5 0h1m5 0h1m4 0h1M7 16.5h1m5 0h1m5 0h1m4 0h1M10 21h12"/>
+            </svg><span id="typeLabel">打字提问</span>
+          </button>
+          <button id="cancelSpeech" class="secondary-button" hidden>取消这次录音</button>
+        </div>
+      </section>
+
+      <section id="memoPage" class="page" aria-labelledby="memoTitle">
+        <label class="search-box">搜索备忘<input id="memoSearch" type="search" placeholder="例如：医院、买菜" /></label>
+        <p id="memoSyncStatus" role="status" hidden></p>
+        <button id="importGuest" type="button" class="secondary-button" hidden></button>
+        <div id="memoList" class="list-stack"></div>
+      </section>
+
+
+      <section id="settingsPage" class="page" aria-labelledby="settingsTitle">
+        <div class="settings-card">
+          <div><h3>字体大小</h3><p>选择您看起来最舒服的大小。</p></div>
+          <div class="segmented" role="group" aria-label="字体大小">
+            <button data-font="normal" class="selected">标准</button><button data-font="large">大</button><button data-font="xlarge">特大</button>
+          </div>
+        </div>
+        <div class="settings-card row-setting">
+          <div><h3>高对比显示</h3><p>让文字和按钮更加醒目。</p></div>
+          <label class="switch"><input id="contrastToggle" aria-label="高对比显示" type="checkbox" /><span></span></label>
+        </div>
+        <div class="settings-card row-setting">
+          <div><h3>自动朗读回答</h3><p>收到回答后自动读给您听。</p></div>
+          <label class="switch"><input id="autoSpeakToggle" aria-label="自动朗读回答" type="checkbox" /><span></span></label>
+        </div>
+      </section>
+    </main>
+    </div>
+
+    <aside id="speechPlayer" class="speech-player" aria-label="朗读控制" hidden>
+      <div class="speech-player-head">
+        <strong id="speechStatus" role="status">正在朗读回答</strong>
+        <button id="closeSpeechPlayer" class="player-close" type="button" aria-label="结束朗读">结束</button>
+      </div>
+      <label class="progress-label" for="speechProgress"><span>朗读位置</span><span id="speechPercent">0%</span></label>
+      <input id="speechProgress" class="speech-progress" type="range" min="0" max="100" value="0" step="1" aria-label="拖动选择朗读位置" />
+      <div class="speech-controls">
+        <button id="pauseSpeechButton" class="primary-button" type="button">⏸ 暂停</button>
+        <div class="speed-controls" role="group" aria-label="朗读速度">
+          <button type="button" data-rate="0.7">慢速</button>
+          <button type="button" data-rate="0.9" class="selected">正常</button>
+          <button type="button" data-rate="1.2">快速</button>
+        </div>
+      </div>
+      <p class="player-help">暂停后点击“继续”会接着读；拖动滑块可跳到想听的位置。</p>
+    </aside>
+
+
+  </div>
+
+  <dialog id="renameDialog" aria-labelledby="renameTitle">
+    <form id="renameForm"><h2 id="renameTitle">修改对话名称</h2>
+      <label>对话名称<input id="renameInput" required maxlength="100"></label>
+      <p id="renameStatus" role="status"></p>
+      <div class="dialog-actions"><button id="cancelRename" type="button" class="secondary-button">取消</button>
+      <button class="primary-button" type="submit">保存</button></div>
+    </form>
+  </dialog>
+  <dialog id="historyDialog" aria-labelledby="historyTitle">
+    <div class="dialog-heading"><h2 id="historyTitle">历史对话</h2><button class="secondary-button" id="closeHistory">关闭</button></div>
+    <div id="threadList"></div>
+    <p id="historyNotice" role="status"></p>
+  </dialog>
+  <dialog id="authDialog" aria-labelledby="authTitle">
+    <form id="authForm">
+      <h2 id="authTitle">登录安心助手</h2>
+      <label>用户名<input id="username" required autocomplete="username" pattern="[A-Za-z0-9_]{3,32}" placeholder="3 至 32 位字母、数字或下划线"></label>
+      <label>密码<input id="password" type="password" minlength="8" maxlength="64" required autocomplete="current-password" placeholder="至少 8 个字符"></label>
+      <p id="authStatus" role="status"></p>
+      <button class="primary-button" id="authSubmit">登录</button>
+      <button type="button" class="secondary-button" id="authSwitch">注册新账号</button>
+      <button type="button" class="secondary-button" id="authCancel">关闭</button>
+    </form>
+  </dialog>
+  <dialog id="formDialog">
+    <form method="dialog" id="dialogForm">
+      <div class="dialog-heading"><h2 id="dialogTitle">新增</h2><button id="closeDialogButton" type="button" class="close-button" aria-label="关闭">×</button></div>
+      <label>内容<textarea id="dialogContent" required rows="3"></textarea></label>
+      <label>时间（选填）<input id="memoWhen" placeholder="例如：每天晚上八点"></label>
+      <label>细节（选填）<textarea id="memoDetails" rows="2" placeholder="例如：地点、要带的东西"></textarea></label>
+      <p id="memoNote" class="confirm-note" role="status">请核对内容后保存。</p>
+      <div class="dialog-actions"><button id="cancelDialogButton" type="button" class="secondary-button">取消</button><button id="confirmDialog" type="submit" value="default" class="primary-button">确认保存</button></div>
+    </form>
+  </dialog>
+
+  <script src="app.js?v=23"></script>
+</body>
+</html>
