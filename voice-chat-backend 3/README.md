@@ -11,7 +11,7 @@ Java REST API，供网页接入多用户智能对话。支持注册登录、独�
 在 PowerShell 中执行：
 
 ```powershell
-Set-Location E:\voice-chat-backend
+Set-Location 'voice-chat-backend 3'
 $env:DEEPSEEK_API_KEY = '填写你的DeepSeek密钥'
 .\start.ps1
 ```
@@ -60,7 +60,7 @@ Token 有效期默认 24 小时。更多 Spring 配置见 `src/main/resources/ap
 
 ## 3. 最小调用流程
 
-以下 PowerShell 示例不输出密码、Token 或模型密钥：
+以下 PowerShell 示例用于本地接口调试：
 
 ```powershell
 $base = 'http://localhost:8080'
@@ -88,7 +88,7 @@ Invoke-RestMethod "$base/api/conversations/$($conversation.id)/messages" -Header
 - 模型适配器兼容 JSON、带代码围栏的 JSON 和纯文本回答；纯文本回答的 `followUp` 为 null，追问可能直接包含于 `reply`。默认不强制 JSON 模式，避免该模式偶发空白输出；空回答、截断回答及错误结构仍会被拒绝。
 - 成功后在一个事务内保存用户和助手消息。网络调用期间不占用数据库事务，失败后不保存半轮消息。
 - 同一会话生成与删除共用非阻塞锁，忙时返回 409；不同会话可并行。并发控制适用于单服务实例。
-- 模型请求不自动重试，避免重复费用；浏览器超时应长于模型超时。网络中断后先查历史，避免将已成功的消息重复提交。
+- 模型请求不自动重试，避免重复费用；浏览器超时应长于模型超时。网页为每次发送生成 clientMessageId，重试时沿用该编号，服务端返回已保存的回答。
 - 数据库通过 Flyway 创建结构，Hibernate 校验结构。不要删除迁移历史或使用 `ddl-auto=create`。
 - 默认日志仅记录请求 ID、方法、状态、耗时和错误类型，不记录 Authorization、密码、完整消息或上游响应。
 - H2 文件数据库适合单实例使用。扩展至多实例前，需要 PostgreSQL 驱动与迁移、数据迁移验证、分布式会话锁以及共享 Token 存储。
@@ -102,6 +102,4 @@ Invoke-RestMethod "$base/api/conversations/$($conversation.id)/messages" -Header
 
 测试包括：认证与凭证摘要、过期退出、用户隔离、多轮上下文、分页和长度校验、并发生成与删除冲突、模型错误与保存事务回滚、文件数据库重启恢复、真实 HTTP 模型适配器、未启用语音接口，以及自定义语音适配器替换。
 
-自动化测试不调用付费模型服务。真实模型联调结果及交付验证记录见 `docs/VERIFICATION.md`。
-
-项目不包含网页页面、备忘功能、提醒功能或自动云部署。
+自动化测试使用测试适配器。整合网站的手动验收流程见[项目首页](../README.md)。目前还覆盖备忘的账号隔离、迁移重放、并发编辑和聊天重试去重。接口结构可从运行服务的 [/v3/api-docs](http://localhost:8080/v3/api-docs) 获取。

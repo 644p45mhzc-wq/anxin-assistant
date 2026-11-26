@@ -1,6 +1,6 @@
 # 网页对接与语音升级说明
 
-本文只说明调用方式，不包含网页页面实现。文字输入和语音输入使用同一个对话接口。
+当前网站的输入与朗读实现位于 [app.js](../../源代码/app.js)。下文提供接口示例和可选的服务端语音扩展方案。文字输入和语音输入使用同一个对话接口。
 
 ## 1. 网页对话
 
@@ -12,11 +12,11 @@
 6. 刷新网页后，使用同一会话 ID 查询历史并继续对话。
 
 ```javascript
-async function sendText(baseUrl, token, conversationId, text, source = 'text') {
+async function sendText(baseUrl, token, conversationId, text, clientMessageId, source = 'text') {
   const response = await fetch(`${baseUrl}/api/conversations/${conversationId}/messages`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ content: text, inputSource: source })
+    body: JSON.stringify({ content: text, inputSource: source, clientMessageId })
   });
   const result = await response.json();
   if (!response.ok) throw result;
@@ -95,7 +95,7 @@ public class CloudRecognition implements SpeechRecognitionProvider {
 
 上例是扩展结构示例，不是可用的语音供应商实现。实际项目只应注册一个识别 Bean；默认 Bean 使用 `@ConditionalOnMissingBean` 自动让位。供应商密钥通过环境配置注入，错误转换为 `ApiException`，不要将上游密钥或响应原样返回给网页。
 
-网页首先读取 `/api/capabilities`，当 `recognition.backendAvailable` 为 true 时，可使用 `MediaRecorder` 录音，将 Blob 放入 `FormData` 的 `file` 字段，上传至 `/api/speech/transcriptions`。不要手动设置 multipart boundary。获得 `text` 后仍调用原有的消息发送接口。
+采用后端识别的客户端可先读取 `/api/capabilities`，当 `recognition.backendAvailable` 为 true 时，可使用 `MediaRecorder` 录音，将 Blob 放入 `FormData` 的 `file` 字段，上传至 `/api/speech/transcriptions`。不要手动设置 multipart boundary。获得 `text` 后仍调用原有的消息发送接口。
 
 后端已限制单个音频 10MB，并接受 WebM、Ogg、WAV、MP3、MP4 和 FLAC 对应的 MIME 类型；供应商适配器负责内容检测、实际格式兼容、转码与供应商限制。
 

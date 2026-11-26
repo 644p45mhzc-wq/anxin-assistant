@@ -70,10 +70,12 @@ Authorization: Bearer <accessToken>
 ### POST /api/conversations/{id}/messages
 
 ```json
-{"content":"我想学习Java","inputSource":"text"}
+{"content":"我想学习Java","inputSource":"text","clientMessageId":"demo-1"}
 ```
 
 `content` 必填且非空，最多 4,000 个 Java UTF-16 代码单元。`inputSource` 可为 `text` 或 `speech`，省略或为 null 时默认 `text`。语音输入应传识别后的文字，不传音频或 base64。
+
+客户端可以提供 `clientMessageId`。同一会话和接口中，重试原消息时沿用同一个编号，即可取回已保存的回答。用户发起新消息时应生成新编号。
 
 成功返回 200：
 
@@ -110,6 +112,24 @@ Authorization: Bearer <accessToken>
 ### DELETE /api/conversations/{id}
 
 删除会话及全部消息，成功返回 204。会话不存在或不属于当前用户时返回 404，忙时返回 409。
+
+### 修改标题与聊天备忘建议
+
+- `POST /api/conversations/{id}/title` 接受 `{"title":"我的新标题"}`，返回更新后的会话。
+- `POST /api/conversations/{id}/memo-suggestions` 接受与发送消息相同的字段，保存询问是否记入备忘的对话。用户确认后，网页再调用下方创建接口。
+
+## 备忘
+
+以下操作均基于登录账号。时间说明保留用户填写的中文，例如“明天上午九点”。`scheduleAnchor` 记录解释相对日期所用的基准时间。
+
+| 请求 | 请求体或行为 |
+|---|---|
+| `GET /api/memos` | 返回当前账号的备忘列表。 |
+| `POST /api/memos` | 提交 `id`、`created` 和 `fields`。fields 包含 text、when、details、scheduleAnchor。 |
+| `PUT /api/memos/{id}` | 提交 `revision` 和更新后的 `fields`。 |
+| `DELETE /api/memos/{id}?revision=当前版本` | 删除指定版本的备忘。 |
+
+重复创建同一条备忘会返回已有记录。已删除的编号返回 410，编辑或删除过期版本返回 409。
 
 ## 语音与健康检查
 
